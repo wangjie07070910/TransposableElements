@@ -112,5 +112,4 @@ while read -r line;
      rm $actmp
 done < $file
 
-# copy back result
-#cp $ff /lustre/scratch/users/mayela.soto/popoolationTE2/all/
+
