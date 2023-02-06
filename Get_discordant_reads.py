@@ -2,30 +2,32 @@ import pysam
 import argparse
 import csv
 
-def extract_discordant(input_bam, hier_file, output_bam):
-    bamfile = pysam.AlignmentFile(input_bam, "rb")
-    chrs = ['6244_Chr1', '6244_Chr2', '6244_Chr3', '6244_Chr4', '6244_Chr5']
-    id_set = set()
-    with open(hier_file, "r") as f:
-        reader = csv.reader(f)
-        for row in reader:
-            id_set.add(row[0])
+parser = argparse.ArgumentParser(description='Filter discordant reads based on hierarchy')
+parser.add_argument('-b', '--bamfile', type=str, help='Input bam file', required=True)
+parser.add_argument('-o', '--outfile', type=str, help='Output bam file', required=True)
+parser.add_argument('-c', '--hierfile', type=str, help='Hierarchy file with id column', required=True)
 
-    outbam = pysam.AlignmentFile(output_bam, "wb", template=bamfile)
+args = parser.parse_args()
 
-    for read in bamfile.fetch():
-        if read.is_paired:
-            if (read.reference_name in chrs) != (read.next_reference_name in id_set):
-                outbam.write(read)
+bamfile = args.bamfile
+outfile = args.outfile
+hierfile = args.hierfile
 
-    outbam.close()
-    bamfile.close()
+chromosomes = ['6244_Chr1', '6244_Chr2', '6244_Chr3', '6244_Chr4', '6244_Chr5']
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Extract discordant reads")
-    parser.add_argument("-b", "--bamfile", type=str, required=True, help="Input bam file")
-    parser.add_argument("-h", "--hierfile", type=str, required=True, help="Family order csv file")
-    parser.add_argument("-o", "--outfile", type=str, required=True, help="Output bam file")
-    args = parser.parse_args()
+with open(hierfile) as file:
+    reader = csv.reader(file)
+    hierarchy = [row[0] for row in reader]
 
-    extract_discordant(args.bamfile, args.hierfile, args.outfile)
+bam = pysam.AlignmentFile(bamfile, "rb")
+out = pysam.AlignmentFile(outfile, "wb", template=bam)
+
+for read in bam.fetch():
+    if read.is_paired:
+        if read.reference_name in chromosomes and read.next_reference_name in hierarchy:
+            out.write(read)
+        elif read.next_reference_name in chromosomes and read.reference_name in hierarchy:
+            out.write(read)
+
+bam.close()
+out.close()
