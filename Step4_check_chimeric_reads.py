@@ -19,8 +19,7 @@ hierarchy_df = pd.read_csv(args.hierarchy, sep='\t')
 matrix_df.columns = ['sample_chr', 'start', 'end', 'gene', 'value']
 
 # Create lists to store the overlapped and non-overlapped rows
-myoverlap1 = []
-myoverlap2 = []
+overlap_list = []
 
 # Open the bam file using pysam
 bam_file = pysam.AlignmentFile(args.bam, "rb")
@@ -51,14 +50,14 @@ for i, row in matrix_df.iterrows():
         if overlap:
             if row['value'] in [0, 'NA']:
                 row['value'] = 1
-            myoverlap1.append(row)
+            overlap_list.append(row)
         else:
-            myoverlap2.append(row)
+            overlap_list.append(row)
 
 # Close the bam file
 bam_file.close()
 
-# Write the overlapped and non-overlapped rows to separate files
-pd.DataFrame(myoverlap1).to_csv(args.output + "_overlap1.csv", index=False)
-pd.DataFrame(myoverlap2).to_csv(args.output + "_overlap2.csv", index=False)
+# Write the overlapped rows to the output file
+pd.DataFrame(overlap_list).sort_values(['sample_chr', 'start', 'end']).to_csv(args.output, index=False)
+
 
