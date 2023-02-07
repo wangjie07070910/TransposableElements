@@ -151,5 +151,5 @@ cd $out
 
 
 #cat ${acc}.covfiltsortChr1.bed ${acc}.covfiltsortChr2.bed ${acc}.covfiltsortChr3.bed ${acc}.covfiltsortChr4.bed ${acc}.covfiltsortChr5.bed > ${acc}.covfiltsortChr1to5.bed
-
+#should be Step4_check_chimeric_reads.py
 python ${scripts}/Step4_Saxa_reads.py -H ${hier} -m ${acc}.covfiltsortChr1to5.bed -b ${acc}.saxa_TEreads.bam -o ${acc}.covfiltsortChr1to5_doublecheck.bed 
